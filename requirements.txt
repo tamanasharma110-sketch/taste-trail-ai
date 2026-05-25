@@ -1,4 +1,3 @@
 streamlit
 googlemaps
 geopy
-google-generativeai
