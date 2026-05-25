@@ -9,7 +9,7 @@ class TasteTrailAgent:
 
         # FIXED STREAMLIT SECRET USAGE
         self.gmaps = googlemaps.Client(
-            key=st.secrets["AIzaSyCtA_07Sq9GkxNCd8ZsGVgSPPKcFVJyFqg"]
+            key=st.secrets["GOOGLE_API_KEY"]
         )
 
     def get_coords(self, location):
