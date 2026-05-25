@@ -1,36 +1,32 @@
 import streamlit as st
 from agent import TasteTrailAgent
 
-st.title("🍔 AI Food Recommendation System")
+st.set_page_config(page_title="Taste Trail AI", page_icon="🍔")
 
-agent = TasteTrailAgent()
+st.title("🍔 Taste Trail AI")
+st.subheader("Find best nearby food based on ratings + distance")
 
-dish = st.text_input("Enter dish (burger, pizza, etc.)")
-location = st.text_input("Enter your location (Brampton, Toronto, etc.)")
+dish = st.text_input("Enter dish (e.g., burger, pizza, biryani)")
+location = st.text_input("Enter your location (e.g., Toronto)")
 
-if st.button("Find Restaurants"):
+if st.button("Search"):
 
-    results = agent.run(dish, location)
-
-    if not results:
-        st.error("No restaurants found")
-
+    if not dish or not location:
+        st.warning("Please enter both dish and location")
     else:
+        agent = TasteTrailAgent()
+        results = agent.run(dish, location)
 
-        st.success(f"Found {len(results)} restaurants")
+        if not results:
+            st.error("No results found")
+        else:
+            st.success(f"Found {len(results)} restaurants")
 
-        for r in results:
+            for r in results:
 
-            st.markdown("---")
-            st.subheader(r["restaurant"])
+                st.markdown("---")
+                st.subheader(r["name"])
 
-            st.write("⭐ Rating:", r["rating"])
-            st.write("📍 Distance:", r["distance_km"], "km")
-
-            st.write("📝 Top Reviews:")
-
-            for rev in r["reviews"]:
-                st.write(f"👤 {rev['person_id']} (⭐{rev['rating']}): {rev['text']}")
-
-            st.success("🧠 AI Recommendation")
-            st.write(r["ai_recommendation"])
+                st.write(f"⭐ Rating: {r['rating']}")
+                st.write(f"📍 Distance: {r['distance_km']} km")
+                st.write(f"🧠 AI Score: {r['ai_score']}")
