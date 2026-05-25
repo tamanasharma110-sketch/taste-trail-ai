@@ -7,6 +7,7 @@ class TasteTrailAgent:
 
     def __init__(self):
 
+        # SAFE STREAMLIT SECRET ACCESS
         self.gmaps = googlemaps.Client(
             key=st.secrets["AIzaSyCtA_07Sq9GkxNCd8ZsGVgSPPKcFVJyFqg"]
         )
@@ -50,7 +51,7 @@ class TasteTrailAgent:
                 (loc["lat"], loc["lng"])
             ).km
 
-            # SIMPLE AI SCORE (ranking formula)
+            # AI-style ranking formula
             ai_score = (rating * 2) - (distance * 0.3)
 
             results.append({
@@ -60,5 +61,5 @@ class TasteTrailAgent:
                 "ai_score": round(ai_score, 2)
             })
 
-        # sort best first
+        # Sort best results first
         return sorted(results, key=lambda x: x["ai_score"], reverse=True)

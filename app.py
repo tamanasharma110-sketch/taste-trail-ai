@@ -1,10 +1,10 @@
 import streamlit as st
 from agent import TasteTrailAgent
 
-st.set_page_config(page_title="Taste Trail AI", page_icon="🍔")
+st.set_page_config(page_title="Taste Trail AI 🍔")
 
 st.title("🍔 Taste Trail AI")
-st.subheader("Find best nearby food based on ratings + distance")
+st.write("Find best nearby restaurants based on dish, ratings & distance")
 
 dish = st.text_input("Enter dish (e.g., burger, pizza, biryani)")
 location = st.text_input("Enter your location (e.g., Toronto)")
@@ -18,7 +18,7 @@ if st.button("Search"):
         results = agent.run(dish, location)
 
         if not results:
-            st.error("No results found")
+            st.error("No restaurants found")
         else:
             st.success(f"Found {len(results)} restaurants")
 
