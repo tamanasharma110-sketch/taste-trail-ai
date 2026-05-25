@@ -13,37 +13,45 @@ class TasteTrailAgent:
             key=st.secrets["GOOGLE_API_KEY"]
         )
 
-        # Gemini AI
+        # Gemini AI (SAFE CONFIG)
         genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+
+        # ⚠️ IMPORTANT: use stable model to avoid NotFound error
+        self.model = genai.GenerativeModel("gemini-pro")
 
     def get_coords(self, location):
 
-        geo = self.gmaps.geocode(location)
+        try:
+            geo = self.gmaps.geocode(location)
+            if not geo:
+                return None
 
-        if not geo:
+            loc = geo[0]["geometry"]["location"]
+            return (loc["lat"], loc["lng"])
+
+        except Exception:
             return None
-
-        loc = geo[0]["geometry"]["location"]
-        return (loc["lat"], loc["lng"])
 
     def run(self, dish, location):
 
         user_loc = self.get_coords(location)
 
         if not user_loc:
-            return []
+            return {"results": [], "ai_review": "Invalid location"}
 
-        places = self.gmaps.places_nearby(
-            location=user_loc,
-            radius=5000,
-            keyword=dish,
-            type="restaurant"
-        ).get("results", [])
+        try:
+            places = self.gmaps.places_nearby(
+                location=user_loc,
+                radius=5000,
+                keyword=dish,
+                type="restaurant"
+            ).get("results", [])
+        except Exception:
+            return {"results": [], "ai_review": "Google Maps error"}
 
         results = []
 
-        # Step 1: build base list
+        # Build restaurant list
         for p in places:
 
             name = p.get("name", "Unknown")
@@ -65,30 +73,31 @@ class TasteTrailAgent:
                 "ai_score": round(ai_score, 2)
             })
 
-        # Step 2: sort results
+        # Sort results
         results = sorted(results, key=lambda x: x["ai_score"], reverse=True)
 
-        # Step 3: take TOP 3 for Gemini
+        # Take top 3 for Gemini
         top_results = results[:3]
 
-        # Step 4: Gemini explanation (ONLY ONCE)
+        # Safe Gemini prompt
         prompt = f"""
-You are a professional food critic AI.
+You are a food expert AI.
 
-User searched for: {dish}
+User searched: {dish}
 
-Here are the top restaurant options:
+Top restaurants:
 {top_results}
 
 Give:
-1. Best restaurant recommendation
-2. Why it is the best (simple explanation)
-3. One-line suggestion for user
-
-Keep it short and human-like.
+1. Best choice
+2. Why
+3. One-line advice
 """
 
-        ai_review = self.model.generate_content(prompt).text
+        try:
+            ai_review = self.model.generate_content(prompt).text
+        except Exception:
+            ai_review = "AI recommendation temporarily unavailable."
 
         return {
             "results": results,
